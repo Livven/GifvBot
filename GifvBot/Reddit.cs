@@ -55,7 +55,8 @@ namespace GifvBot
             {
                 new KeyValuePair<string, string>("api_type", "json"),
                 new KeyValuePair<string, string>("thing_id", parent),
-                new KeyValuePair<string, string>("text", $"[GIFV link]({link})"),
+                // TODO read template from environment variable
+                new KeyValuePair<string, string>("text", $"[GIFV link]({link}) // [FAQ](https://www.reddit.com/r/livven/wiki/gifv-bot)"),
             }));
             Console.WriteLine($"{(int)response.StatusCode} {response.ReasonPhrase}");
             Console.WriteLine(await response.Content.ReadAsStringAsync());
