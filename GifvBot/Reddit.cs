@@ -32,10 +32,10 @@ namespace GifvBot
         public async Task AuthenticateAsync(string clientId, string secret, string refreshToken)
         {
             client.DefaultRequestHeaders.SetBasicAuthentication(clientId, secret);
-            var response = await client.PostAsync(new Uri("https://www.reddit.com/api/v1/access_token"), new FormUrlEncodedContent(new[]
+            var response = await client.PostAsync(new Uri("https://www.reddit.com/api/v1/access_token"), new FormUrlEncodedContent(new Dictionary<string, string>()
             {
-                new KeyValuePair<string, string>("grant_type", "refresh_token"),
-                new KeyValuePair<string, string>("refresh_token", refreshToken),
+                { "grant_type", "refresh_token" },
+                { "refresh_token", refreshToken },
             }));
             var json = await response.Content.ReadAsJsonAsync();
             client.DefaultRequestHeaders.SetBearerAuthentication((string)json["access_token"]);
@@ -51,12 +51,12 @@ namespace GifvBot
 
         public async Task PostCommentAsync(string parent, Uri link)
         {
-            var response = await client.PostAsync("api/comment", new FormUrlEncodedContent(new[]
+            var response = await client.PostAsync("api/comment", new FormUrlEncodedContent(new Dictionary<string, string>()
             {
-                new KeyValuePair<string, string>("api_type", "json"),
-                new KeyValuePair<string, string>("thing_id", parent),
+                { "api_type", "json" },
+                { "thing_id", parent },
                 // TODO read template from environment variable
-                new KeyValuePair<string, string>("text", $"[GIFV link]({link}) // [FAQ](https://www.reddit.com/r/livven/wiki/gifv-bot)"),
+                { "text", $"[GIFV link]({link}) // [FAQ](https://www.reddit.com/r/livven/wiki/gifv-bot)" },
             }));
             Console.WriteLine($"{(int)response.StatusCode} {response.ReasonPhrase}");
             Console.WriteLine(await response.Content.ReadAsStringAsync());
@@ -74,10 +74,10 @@ namespace GifvBot
             {
                 return;
             }
-            await client.PostAsync($"r/{lastProcessedWikiSubreddit}/api/wiki/edit", new FormUrlEncodedContent(new[]
+            await client.PostAsync($"r/{lastProcessedWikiSubreddit}/api/wiki/edit", new FormUrlEncodedContent(new Dictionary<string, string>
             {
-                new KeyValuePair<string, string>("page", lastProcessedWikiPage),
-                new KeyValuePair<string, string>("content", lastProcessed),
+                { "page", lastProcessedWikiPage },
+                { "content", lastProcessed },
             }));
         }
 
@@ -89,7 +89,7 @@ namespace GifvBot
                 return items;
             }
             var previousEntries = await GetFullListingAsync(items[0].Name);
-            return previousEntries.ToList().Concat(items).ToList();
+            return previousEntries.Concat(items).ToList();
         }
 
         async Task<IReadOnlyList<Item>> GetListingPageAsync(string before)

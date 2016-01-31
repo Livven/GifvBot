@@ -13,22 +13,6 @@ namespace GifvBot
 {
     static class Extensions
     {
-        public static async Task LoopAsync(this Func<Task> runTask, int secondsDelay)
-        {
-            while (true)
-            {
-                try
-                {
-                    await runTask();
-                }
-                catch
-                {
-                    Console.WriteLine("exception");
-                }
-                await Task.Delay(TimeSpan.FromSeconds(secondsDelay));
-            }
-        }
-
         public static async Task<JToken> GetJsonAsync(this HttpClient client, Uri uri)
         {
             var response = await client.GetAsync(uri);

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace GifvBot
@@ -51,11 +50,19 @@ namespace GifvBot
                 var convertedCount = 0;
                 foreach (var item in filtered)
                 {
-                    var result = await imgur.GetGifvLinkAsync(item.Link);
-                    if (result != null)
+                    try
                     {
-                        convertedCount++;
-                        await reddit.PostCommentAsync(item.Name, result);
+                        var result = await imgur.GetGifvUriAsync(item.Link);
+                        if (result != null)
+                        {
+                            convertedCount++;
+                            await reddit.PostCommentAsync(item.Name, result);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"error processing item {item.Name} with link {item.Link}");
+                        Console.WriteLine(ex.Message);
                     }
                 }
                 Console.WriteLine($"{convertedCount} links converted");

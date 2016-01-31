@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using AngleSharp.Dom;
-using AngleSharp.Dom.Html;
 
 namespace GifvBot
 {
@@ -16,64 +15,38 @@ namespace GifvBot
             client.Dispose();
         }
 
-        public async Task<Uri> GetGifvLinkAsync(Uri url)
+        public async Task<Uri> GetGifvUriAsync(Uri uri)
         {
-            try
-            {
-                var response = await GetImgurPageAsync(url);
-                if (response == null)
-                {
-                    return null;
-                }
-                var html = await response.Content.ReadAsHtmlAsync();
-                var twitterStreams = html.QuerySelectorAll(@"meta[name=""twitter:player:stream""]");
-                return GetGifvLink(twitterStreams);
-            }
-            catch
-            {
-                return null;
-            }
+            var response = await GetPageAsync(uri);
+            var html = await response.Content.ReadAsHtmlAsync();
+            return FindGifvUri(html.QuerySelectorAll(@"meta[name=""twitter:player:stream""]"));
         }
 
-        async Task<HttpResponseMessage> GetImgurPageAsync(Uri url)
+        async Task<HttpResponseMessage> GetPageAsync(Uri uri)
         {
-            url = GetImgurPageLink(url) ?? url;
+            uri = GetPageUri(uri);
             while (true)
             {
-                var response = await client.GetAsync(url);
-                if (!response.IsSuccessStatusCode)
-                {
-                    return null;
-                }
+                var response = await client.GetAsync(uri);
+                // if the link is on the main imgur.com domain but has a valid file ending, it will be redirected to i.imgur.com
+                // so make sure the redirected link is on the main imgur.com domain
                 var redirectedUri = response.RequestMessage.RequestUri;
-                if (redirectedUri == url)
-                {
-                    return response;
-                }
-                url = GetImgurPageLink(redirectedUri);
-                if (url == null)
+                uri = GetPageUri(redirectedUri);
+                if (redirectedUri == uri)
                 {
                     return response;
                 }
             }
         }
 
-        static void Analyze(IHtmlDocument html)
-        {
-            var ogType = html.QuerySelector(@"meta[property=""og:type""]")?.GetAttribute("content");
-            var twitterCard = html.QuerySelector(@"meta[name=""twitter:card""]")?.GetAttribute("content");
-            var ogVideos = GetGifvLink(html.QuerySelectorAll(@"meta[property=""og:video:secure_url""]"));
-            var twitterStreams = GetGifvLink(html.QuerySelectorAll(@"meta[name=""twitter:player:stream""]"));
-        }
-
-        static Uri GetGifvLink(IEnumerable<IElement> list)
+        static Uri FindGifvUri(IEnumerable<IElement> list)
         {
             foreach (var element in list)
             {
-                var url = new Uri(element.GetAttribute("content"));
-                if (url.Host == "i.imgur.com")
+                var uri = new Uri(element.GetAttribute("content"));
+                if (uri.Host == "i.imgur.com")
                 {
-                    var result = new UriBuilder(url);
+                    var result = new UriBuilder(uri);
                     result.Path = result.Path.Split('.')[0] + ".gifv";
                     return result.Uri;
                 }
@@ -81,17 +54,17 @@ namespace GifvBot
             return null;
         }
 
-        static Uri GetImgurPageLink(Uri url)
+        static Uri GetPageUri(Uri uri)
         {
-            if (url.Host != "i.imgur.com")
+            if (uri.Host == "i.imgur.com")
             {
-                return null;
+                var result = new UriBuilder(uri);
+                result.Host = "imgur.com";
+                result.Path = result.Path.Split('.')[0];
+                result.Query = "";
+                return result.Uri;
             }
-            var result = new UriBuilder(url);
-            result.Host = "imgur.com";
-            result.Path = result.Path.Split('.')[0];
-            result.Query = "";
-            return result.Uri;
+            return uri;
         }
     }
 }
