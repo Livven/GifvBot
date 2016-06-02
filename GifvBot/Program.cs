@@ -6,6 +6,8 @@ namespace GifvBot
 {
     class Program
     {
+        const int ConsecutiveRunDelay = 10;
+
         readonly string ClientId;
         readonly string Secret;
         readonly string RefreshToken;
@@ -37,7 +39,7 @@ namespace GifvBot
                 {
                     Console.WriteLine(ex.Message);
                 }
-                await Task.Delay(TimeSpan.FromSeconds(10));
+                await Task.Delay(TimeSpan.FromSeconds(ConsecutiveRunDelay));
             }
         }
 
