@@ -10,6 +10,8 @@ namespace GifvBot
         readonly string Secret;
         readonly string RefreshToken;
 
+        Reddit.Item lastProcessed;
+
         Program()
         {
             ClientId = Environment.GetEnvironmentVariable("GIFVBOT_REDDIT_CLIENT_ID");
@@ -45,12 +47,13 @@ namespace GifvBot
             using (var imgur = new Imgur())
             {
                 await reddit.AuthenticateAsync(ClientId, Secret, RefreshToken);
-                var items = await reddit.GetNewItemsAsync();
+                var items = await reddit.GetNewItemsAsync(lastProcessed);
                 var filtered = items.Where(item => (item.Link.Host == "imgur.com" || item.Link.Host.EndsWith(".imgur.com")) && !item.Link.AbsolutePath.EndsWith(".gifv")).ToList();
                 Console.WriteLine($"{items.Count} new items, {filtered.Count} to process, {items.Count - filtered.Count} filtered out");
                 var convertedCount = 0;
                 foreach (var item in filtered)
                 {
+                    lastProcessed = item;
                     try
                     {
                         var result = await imgur.GetGifvUriAsync(item.Link);

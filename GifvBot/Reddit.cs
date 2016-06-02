@@ -41,11 +41,13 @@ namespace GifvBot
             client.DefaultRequestHeaders.SetBearerAuthentication((string)json["access_token"]);
         }
 
-        public async Task<IReadOnlyList<Item>> GetNewItemsAsync()
+        public async Task<IReadOnlyList<Item>> GetNewItemsAsync(Item lastProcessed)
         {
-            var lastProcessed = await GetLastProcessedAsync();
-            var items = await GetFullListingAsync(lastProcessed);
-            await UpdateLastProcessedAsync(items.FirstOrDefault()?.Name);
+            if (lastProcessed == null)
+            {
+                lastProcessed = await GetLastProcessedAsync();
+            }
+            var items = await GetFullListingAsync(lastProcessed.Name);
             return items.Reverse().ToList();
         }
 
@@ -62,23 +64,11 @@ namespace GifvBot
             Console.WriteLine(await response.Content.ReadAsStringAsync());
         }
 
-        async Task<string> GetLastProcessedAsync()
+        async Task<Item> GetLastProcessedAsync()
         {
-            var json = await client.GetJsonAsync($"r/{lastProcessedWikiSubreddit}/wiki/{lastProcessedWikiPage}");
-            return (string)json["data"]["content_md"];
-        }
-
-        async Task UpdateLastProcessedAsync(string lastProcessed)
-        {
-            if (string.IsNullOrEmpty(lastProcessed))
-            {
-                return;
-            }
-            await client.PostAsync($"r/{lastProcessedWikiSubreddit}/api/wiki/edit", new FormUrlEncodedContent(new Dictionary<string, string>
-            {
-                { "page", lastProcessedWikiPage },
-                { "content", lastProcessed },
-            }));
+            var json = await client.GetJsonAsync("user/gifv-bot/comments/?sort=new&limit=1");
+            var items = ParseJsonListing(json, true);
+            return items.FirstOrDefault();
         }
 
         async Task<IReadOnlyList<Item>> GetFullListingAsync(string before)
@@ -95,21 +85,29 @@ namespace GifvBot
         async Task<IReadOnlyList<Item>> GetListingPageAsync(string before)
         {
             var json = await client.GetJsonAsync($"domain/imgur.com/new?limit={limit}&before={before}");
-            return json["data"]["children"].Select(item => ParseItem(item["data"])).ToList();
+            return ParseJsonListing(json, false);
         }
 
-        Item ParseItem(JToken json)
+        IReadOnlyList<Item> ParseJsonListing(JToken json, bool isCommentListing)
+        {
+            return json["data"]["children"].Select(item => ParseItem(item["data"], isCommentListing)).ToList();
+        }
+
+        Item ParseItem(JToken json, bool isComment)
         {
             return new Item()
             {
-                Name = (string)json["name"],
-                Link = (Uri)json["url"],
+                Name = (string)json[isComment ? "parent_id" : "name"],
+                Created = DateTimeOffset.FromUnixTimeSeconds((long)json["created_utc"]),
+                Link = (Uri)json[isComment ? "link_url" : "url"],
             };
         }
 
         public class Item
         {
             public string Name { get; set; }
+
+            public DateTimeOffset Created { get; set; }
 
             public Uri Link { get; set; }
         }
