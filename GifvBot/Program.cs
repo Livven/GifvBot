@@ -57,7 +57,9 @@ namespace GifvBot
                         if (result != null)
                         {
                             convertedCount++;
+#if !DEBUG
                             await reddit.PostCommentAsync(item.Name, result);
+#endif
                         }
                     }
                     catch (Exception ex)
