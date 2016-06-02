@@ -6,11 +6,11 @@ namespace GifvBot
 {
     class Program
     {
-        static readonly string ClientId;
-        static readonly string Secret;
-        static readonly string RefreshToken;
+        readonly string ClientId;
+        readonly string Secret;
+        readonly string RefreshToken;
 
-        static Program()
+        Program()
         {
             ClientId = Environment.GetEnvironmentVariable("GIFVBOT_REDDIT_CLIENT_ID");
             Secret = Environment.GetEnvironmentVariable("GIFVBOT_REDDIT_SECRET");
@@ -19,10 +19,11 @@ namespace GifvBot
 
         static void Main(string[] args)
         {
-            MainAsync(args).Wait();
+            var program = new Program();
+            program.KeepRunningAsync().Wait();
         }
 
-        static async Task MainAsync(string[] args)
+        async Task KeepRunningAsync()
         {
             while (true)
             {
@@ -38,7 +39,7 @@ namespace GifvBot
             }
         }
 
-        static async Task RunAsync()
+        async Task RunAsync()
         {
             using (var reddit = new Reddit("gifvbot", "lastprocessed"))
             using (var imgur = new Imgur())
