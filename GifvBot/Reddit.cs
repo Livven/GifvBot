@@ -41,14 +41,16 @@ namespace GifvBot
             client.DefaultRequestHeaders.SetBearerAuthentication((string)json["access_token"]);
         }
 
-        public async Task<IReadOnlyList<Item>> GetNewItemsAsync(Item lastProcessed)
+        public async Task<IReadOnlyList<Item>> GetNewItemsAsync(Item lastProcessed, bool optimizeLoading)
         {
             if (lastProcessed == null)
             {
                 lastProcessed = await GetLastProcessedAsync();
             }
-            var items = await GetFullListingAsync(lastProcessed.Name);
-            return items.Reverse().ToList();
+            // sometimes using the "before" parameter can return an empty list even if new items are available
+            // avoid that by disabling optimized loading and filtering the full list manually
+            var items = await GetFullListingAsync(optimizeLoading ? lastProcessed.Name : null);
+            return items.TakeWhile(item => item.Name != lastProcessed.Name).Reverse().ToList();
         }
 
         public async Task PostCommentAsync(string parent, Uri link)
