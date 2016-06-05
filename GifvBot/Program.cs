@@ -10,7 +10,7 @@ namespace GifvBot
 
         const int EmptyListingFailsafeThreshold = 6;
 
-        readonly string clientId, secret, refreshToken;
+        readonly string username, clientId, secret, refreshToken;
 
         readonly bool isCommentingEnabled;
 
@@ -20,6 +20,7 @@ namespace GifvBot
 
         Program()
         {
+            username = Environment.GetEnvironmentVariable("GIFVBOT_REDDIT_USERNAME");
             clientId = Environment.GetEnvironmentVariable("GIFVBOT_REDDIT_CLIENT_ID");
             secret = Environment.GetEnvironmentVariable("GIFVBOT_REDDIT_SECRET");
             refreshToken = Environment.GetEnvironmentVariable("GIFVBOT_REDDIT_REFRESH_TOKEN");
@@ -50,7 +51,7 @@ namespace GifvBot
 
         async Task RunAsync()
         {
-            using (var reddit = new Reddit())
+            using (var reddit = new Reddit(username))
             using (var imgur = new Imgur())
             {
                 await reddit.AuthenticateAsync(clientId, secret, refreshToken);

@@ -14,10 +14,13 @@ namespace GifvBot
 
         static readonly TimeSpan recentThreshold = TimeSpan.FromMinutes(8);
 
+        readonly string username;
+
         HttpClient client = new HttpClient();
 
-        public Reddit()
+        public Reddit(string username)
         {
+            this.username = username;
             client.BaseAddress = new Uri("https://oauth.reddit.com");
             client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("GifvBot", "0.1"));
         }
@@ -71,7 +74,7 @@ namespace GifvBot
 
         async Task<Item> GetLastProcessedAsync()
         {
-            var json = await client.GetJsonAsync("user/gifv-bot/comments/?sort=new&limit=1");
+            var json = await client.GetJsonAsync($"user/{username}/comments/?sort=new&limit=1");
             var items = ParseJsonListing(json, true);
             return items.FirstOrDefault();
         }
