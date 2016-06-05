@@ -14,14 +14,10 @@ namespace GifvBot
 
         static readonly TimeSpan recentThreshold = TimeSpan.FromMinutes(8);
 
-        string lastProcessedWikiSubreddit, lastProcessedWikiPage;
-
         HttpClient client = new HttpClient();
 
-        public Reddit(string lastProcessedWikiSubreddit, string lastProcessedWikiPage)
+        public Reddit()
         {
-            this.lastProcessedWikiSubreddit = lastProcessedWikiSubreddit;
-            this.lastProcessedWikiPage = lastProcessedWikiPage;
             client.BaseAddress = new Uri("https://oauth.reddit.com");
             client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("GifvBot", "0.1"));
         }

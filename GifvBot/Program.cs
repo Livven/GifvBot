@@ -51,7 +51,7 @@ namespace GifvBot
 
         async Task RunAsync()
         {
-            using (var reddit = new Reddit("gifvbot", "lastprocessed"))
+            using (var reddit = new Reddit())
             using (var imgur = new Imgur())
             {
                 await reddit.AuthenticateAsync(ClientId, Secret, RefreshToken);
