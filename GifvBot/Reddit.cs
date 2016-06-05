@@ -50,12 +50,15 @@ namespace GifvBot
                 lastProcessed = await GetLastProcessedAsync();
             }
 
+            // lastProcessed will still be null if the account is new
+            var lastProcessedId = lastProcessed?.Name;
+
             // sometimes using the "before" parameter can return an empty list even if new items are available
             // avoid that by disabling optimized loading and filtering the full list manually
-            var items = await GetFullListingAsync(optimizeLoading ? lastProcessed.Name : null);
+            var items = await GetFullListingAsync(optimizeLoading ? lastProcessedId : null);
             var recent = DateTimeOffset.UtcNow - recentThreshold;
             return items
-                .TakeWhile(item => item.Name != lastProcessed.Name)
+                .TakeWhile(item => item.Name != lastProcessedId)
                 .Where(item => item.Created > recent)
                 .Reverse()
                 .ToList();
