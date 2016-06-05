@@ -10,7 +10,7 @@ namespace GifvBot
 {
     class Reddit : IDisposable
     {
-        const int limit = 100;
+        const int Limit = 100;
 
         static readonly TimeSpan recentThreshold = TimeSpan.FromMinutes(8);
 
@@ -83,7 +83,7 @@ namespace GifvBot
         async Task<IReadOnlyList<Item>> GetFullListingAsync(string before)
         {
             var items = await GetListingPageAsync(before);
-            if (string.IsNullOrEmpty(before) || items.Count < limit)
+            if (string.IsNullOrEmpty(before) || items.Count < Limit)
             {
                 return items;
             }
@@ -93,7 +93,7 @@ namespace GifvBot
 
         async Task<IReadOnlyList<Item>> GetListingPageAsync(string before)
         {
-            var json = await client.GetJsonAsync($"domain/imgur.com/new?limit={limit}&before={before}");
+            var json = await client.GetJsonAsync($"domain/imgur.com/new?limit={Limit}&before={before}");
             return ParseJsonListing(json, false);
         }
 

@@ -10,10 +10,10 @@ namespace GifvBot
 
         const int EmptyListingFailsafeThreshold = 6;
 
-        readonly string ClientId;
-        readonly string Secret;
-        readonly string RefreshToken;
-        readonly bool IsCommentingEnabled;
+        readonly string clientId;
+        readonly string secret;
+        readonly string refreshToken;
+        readonly bool isCommentingEnabled;
 
         Reddit.Item lastProcessed;
 
@@ -21,10 +21,10 @@ namespace GifvBot
 
         Program()
         {
-            ClientId = Environment.GetEnvironmentVariable("GIFVBOT_REDDIT_CLIENT_ID");
-            Secret = Environment.GetEnvironmentVariable("GIFVBOT_REDDIT_SECRET");
-            RefreshToken = Environment.GetEnvironmentVariable("GIFVBOT_REDDIT_REFRESH_TOKEN");
-            IsCommentingEnabled = "true".Equals(Environment.GetEnvironmentVariable("GIFVBOT_IS_COMMENTING_ENABLED"), StringComparison.OrdinalIgnoreCase);
+            clientId = Environment.GetEnvironmentVariable("GIFVBOT_REDDIT_CLIENT_ID");
+            secret = Environment.GetEnvironmentVariable("GIFVBOT_REDDIT_SECRET");
+            refreshToken = Environment.GetEnvironmentVariable("GIFVBOT_REDDIT_REFRESH_TOKEN");
+            isCommentingEnabled = "true".Equals(Environment.GetEnvironmentVariable("GIFVBOT_IS_COMMENTING_ENABLED"), StringComparison.OrdinalIgnoreCase);
         }
 
         static void Main(string[] args)
@@ -54,7 +54,7 @@ namespace GifvBot
             using (var reddit = new Reddit())
             using (var imgur = new Imgur())
             {
-                await reddit.AuthenticateAsync(ClientId, Secret, RefreshToken);
+                await reddit.AuthenticateAsync(clientId, secret, refreshToken);
                 // if no items are returned several times in a row it could be because of the ID of the last processed item
                 // this could happen when the corresponding post has become too old, or maybe if it has been deleted
                 // in that case disable optimized loading as a fail-safe to avoid getting stuck in a state where no new items can ever be loaded again
@@ -72,7 +72,7 @@ namespace GifvBot
                         if (result != null)
                         {
                             convertedCount++;
-                            if (IsCommentingEnabled)
+                            if (isCommentingEnabled)
                             {
                                 await reddit.PostCommentAsync(item.Name, result);
                             }
