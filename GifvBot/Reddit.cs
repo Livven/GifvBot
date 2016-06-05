@@ -12,6 +12,8 @@ namespace GifvBot
     {
         const int limit = 100;
 
+        static readonly TimeSpan recentThreshold = TimeSpan.FromMinutes(8);
+
         string lastProcessedWikiSubreddit, lastProcessedWikiPage;
 
         HttpClient client = new HttpClient();
@@ -47,10 +49,16 @@ namespace GifvBot
             {
                 lastProcessed = await GetLastProcessedAsync();
             }
+
             // sometimes using the "before" parameter can return an empty list even if new items are available
             // avoid that by disabling optimized loading and filtering the full list manually
             var items = await GetFullListingAsync(optimizeLoading ? lastProcessed.Name : null);
-            return items.TakeWhile(item => item.Name != lastProcessed.Name).Reverse().ToList();
+            var recent = DateTimeOffset.UtcNow - recentThreshold;
+            return items
+                .TakeWhile(item => item.Name != lastProcessed.Name)
+                .Where(item => item.Created > recent)
+                .Reverse()
+                .ToList();
         }
 
         public async Task PostCommentAsync(string parent, Uri link)
