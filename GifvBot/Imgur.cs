@@ -28,6 +28,7 @@ namespace GifvBot
             while (true)
             {
                 var response = await client.GetAsync(uri);
+
                 // if the link is on the main imgur.com domain but has a valid file ending, it will be redirected to i.imgur.com
                 // so make sure the redirected link is on the main imgur.com domain
                 var redirectedUri = response.RequestMessage.RequestUri;

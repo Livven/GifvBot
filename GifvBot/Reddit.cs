@@ -41,11 +41,7 @@ namespace GifvBot
 
         public async Task<IReadOnlyList<Item>> GetNewItemsAsync(Item lastProcessed, bool optimizeLoading)
         {
-            if (lastProcessed == null)
-            {
-                lastProcessed = await GetLastProcessedAsync();
-            }
-
+            lastProcessed = lastProcessed ?? await GetLastProcessedAsync();
             // lastProcessed will still be null if the account is new
             var lastProcessedId = lastProcessed?.Name;
 
