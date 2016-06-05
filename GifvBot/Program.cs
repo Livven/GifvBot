@@ -13,6 +13,7 @@ namespace GifvBot
         readonly string ClientId;
         readonly string Secret;
         readonly string RefreshToken;
+        readonly bool IsCommentingEnabled;
 
         Reddit.Item lastProcessed;
 
@@ -23,6 +24,7 @@ namespace GifvBot
             ClientId = Environment.GetEnvironmentVariable("GIFVBOT_REDDIT_CLIENT_ID");
             Secret = Environment.GetEnvironmentVariable("GIFVBOT_REDDIT_SECRET");
             RefreshToken = Environment.GetEnvironmentVariable("GIFVBOT_REDDIT_REFRESH_TOKEN");
+            IsCommentingEnabled = "true".Equals(Environment.GetEnvironmentVariable("GIFVBOT_IS_COMMENTING_ENABLED"), StringComparison.OrdinalIgnoreCase);
         }
 
         static void Main(string[] args)
@@ -70,9 +72,10 @@ namespace GifvBot
                         if (result != null)
                         {
                             convertedCount++;
-#if !DEBUG
-                            await reddit.PostCommentAsync(item.Name, result);
-#endif
+                            if (IsCommentingEnabled)
+                            {
+                                await reddit.PostCommentAsync(item.Name, result);
+                            }
                         }
                     }
                     catch (Exception ex)
