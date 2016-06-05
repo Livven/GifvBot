@@ -1,1 +1,5 @@
-﻿[GIFV link]({0}) // [FAQ](https://www.reddit.com/r/livven/wiki/gifv-bot)
+﻿[GIFV link]({0})
+
+---
+
+_^I ^am ^a ^bot. ^[FAQ](https://www.reddit.com/r/livven/wiki/gifv-bot) ^// ^[code](https://github.com/Livven/GifvBot)_
