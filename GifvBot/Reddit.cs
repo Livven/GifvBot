@@ -14,13 +14,14 @@ namespace GifvBot
 
         static readonly TimeSpan recentThreshold = TimeSpan.FromMinutes(8);
 
-        readonly string username;
+        readonly string username, commentTemplate;
 
         HttpClient client = new HttpClient();
 
-        public Reddit(string username)
+        public Reddit(string username, string commentTemplate)
         {
             this.username = username;
+            this.commentTemplate = commentTemplate;
             client.BaseAddress = new Uri("https://oauth.reddit.com");
             client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("GifvBot", "0.1"));
         }
@@ -65,8 +66,7 @@ namespace GifvBot
             {
                 { "api_type", "json" },
                 { "thing_id", parent },
-                // TODO read template from environment variable
-                { "text", $"[GIFV link]({link}) // [FAQ](https://www.reddit.com/r/livven/wiki/gifv-bot)" },
+                { "text", string.Format(commentTemplate, link) },
             }));
             Console.WriteLine($"{(int)response.StatusCode} {response.ReasonPhrase}");
             Console.WriteLine(await response.Content.ReadAsStringAsync());
